@@ -2,14 +2,21 @@ import os
 import cv2
 import numpy as np
 from glob import glob
-from utils import apply_color, overlay_mask_on_image
+import tensorflow as tf
 import matplotlib.pyplot as plt
-from semantic_segmentation import predict
 from tensorflow.keras.utils import to_categorical
+from sklearn.metrics import ConfusionMatrixDisplay
+from binary_classification import predict as binary_predict
+from semantic_segmentation import predict as semantic_predict
+from utils import apply_color, overlay_mask_on_image, confusion_matrix_calc, f1_score
 
 IMAGE_PATH = "./data_images/img/"
 MASK_PATH = "./data_images/annotations/"
 PRED_PATH = "./data_images/pred_masks/"
+PLOT_CCOMPARE_PATH = "./data_images/plot_compare"
+# IMAGE_PATH = "./test_dataset/img/"
+# MASK_PATH = "./test_dataset/annotations/"
+# PRED_PATH = "./test_dataset/pred_masks/"
 
 NUM_CLASSES = 3
 X_SIZE, Y_SIZE = (256, 256)
@@ -58,14 +65,48 @@ def load_data(image_path, mask_path):
 
 
 def process_images(images):
-    pred_masks = predict(images)
+    pred_unsafe = binary_predict(images)
+    pred_unsafe = np.squeeze(pred_unsafe, axis=-1)
 
-    return pred_masks
+    pred_masks = semantic_predict(images)
+
+    return (pred_unsafe, pred_masks)
+
+
+def confusion_matrix_disp(label_path, pred_path):
+    label_paths = sorted(glob(os.path.join(label_path, "*.png")))
+    pred_paths = sorted(glob(os.path.join(pred_path, "*.png")))
+
+    cm = confusion_matrix_calc(label_paths, pred_paths, (576, 768, 3))
+
+    class_labels = ['Background', 'Gun', 'Knife']
+    disp = ConfusionMatrixDisplay(
+        confusion_matrix=cm, display_labels=class_labels)
+    disp.plot(cmap='Blues')
+    plt.tight_layout()
+    plt.show()
+
+
+def f1_score_disp(label_path, pred_path):
+    label_paths = sorted(glob(os.path.join(label_path, "*.png")))
+    pred_paths = sorted(glob(os.path.join(pred_path, "*.png")))
+
+    labels = np.zeros(((len(label_paths), ) + (576, 768, 3)))
+    preds = np.zeros(((len(label_paths), ) + (576, 768, 3)))
+
+    for i, (label_path, pred_path) in enumerate(zip(label_paths, pred_paths)):
+        label = cv2.imread(label_path)
+        pred = cv2.imread(pred_path)
+
+        labels[i] = label
+        preds[i] = pred
+
+    return f1_score(labels, preds)
 
 
 def start():
     images, masks = load_data(IMAGE_PATH, MASK_PATH)
-    preds = process_images(images)
+    pred_unsafe, pred_masks = process_images(images)
 
     # plot image, mask and prediction mask for all predictions
 
@@ -73,12 +114,29 @@ def start():
 
         img = (images[i] * 255).astype(np.uint8)
         orig_mask = apply_color(masks[i], GUN_COLOR, KNIFE_COLOR)
-        pred_mask = apply_color(preds[i], GUN_COLOR, KNIFE_COLOR)
-        # orig_mask = apply_color(masks[i])
-        # pred_mask = apply_color(preds[i])
+
+        if pred_unsafe[i] == 1:
+            pred_mask = apply_color(pred_masks[i], GUN_COLOR, KNIFE_COLOR)
+
+        else:
+            pred_mask = np.zeros_like(orig_mask)
 
         overlay_orig_mask = overlay_mask_on_image(img, orig_mask, 0.75)
         overlay_pred_mask = overlay_mask_on_image(img, pred_mask, 0.75)
+
+        orig_status = "unsafe"
+        pred_status = "unsafe"
+
+        # original mask safe status
+        if np.all(np.argmax(masks[i], axis=-1) == 0):
+            orig_status = "safe"
+
+        # predcited mask safe status
+        if pred_unsafe[i] == 0:
+            pred_status = "safe"
+
+        if np.all(np.argmax(pred_masks[i], axis=-1) == 0):
+            pred_status = "safe"
 
         plt.figure(figsize=(10, 4))
 
@@ -89,29 +147,48 @@ def start():
 
         plt.subplot(1, 3, 2)
         plt.axis("off")
-        plt.title("Original Mask")
+        plt.title("Original Mask ({})".format(orig_status))
         plt.imshow(overlay_orig_mask, interpolation="nearest")
 
         plt.subplot(1, 3, 3)
         plt.axis("off")
-        plt.title("Predicted Mask")
+        plt.title("Predicted Mask ({})".format(pred_status))
         plt.imshow(overlay_pred_mask, interpolation="nearest")
 
         plt.tight_layout()
-        plt.show()
+        plot_path = os.path.join(PLOT_CCOMPARE_PATH, f'compare_{i}.png')
+        plt.savefig(plot_path)
+        # plt.show()
 
     # save predictions
 
     # img_paths = sorted(glob(os.path.join(IMAGE_PATH, "*.png")))
 
-    # for i, (pred_mask, img_path) in enumerate(zip(preds, img_paths)):
-    #     pred_mask = cv2.resize(
-    #         pred_mask, (768, 576), interpolation=cv2.INTER_NEAREST)
+    # for i, (pred_mask, img_path) in enumerate(zip(pred_masks, img_paths)):
+
+    #     if pred_unsafe[i] == 1:
+    #         pred_mask = cv2.resize(
+    #             pred_mask, (768, 576), interpolation=cv2.INTER_NEAREST)
+
+    #     else:
+    #         pred_mask = np.zeros((576, 768, 3))
 
     #     pred_mask_path = os.path.join(PRED_PATH, os.path.basename(img_path))
-    #     pred_mask_colorized = cv2.cvtColor(apply_color(pred_mask), cv2.COLOR_BGR2RGB)
+    #     pred_mask_colorized = cv2.cvtColor(
+    #         apply_color(pred_mask), cv2.COLOR_BGR2RGB)
 
     #     cv2.imwrite(pred_mask_path, pred_mask_colorized)
 
 
 start()
+
+# colorized_label_path = "./test_dataset/colorized"
+# colorized_pred_path = "./test_dataset/pred_masks"
+
+# confusion_matrix_disp(colorized_label_path, colorized_pred_path)
+
+# with tf.device('/CPU:0'):
+#     f1score = f1_score_disp(colorized_label_path, colorized_pred_path)
+#     print('\n\n------------------------------------\n')
+#     print(f"f1 score: {f1score}")
+#     print('\n\n------------------------------------')

@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
 import tensorflow as tf
+from sklearn.metrics import confusion_matrix
 from tensorflow.keras import backend as K
 
+NUM_CLASSES = 3
+
 # SEMANTIC SEGMENTATION
-def apply_color(mask, gun_color = (255, 0, 0), knife_color = (0, 255, 0)):
+
+
+def apply_color(mask, gun_color=(255, 0, 0), knife_color=(0, 255, 0)):
     colorized = np.zeros((mask.shape[0], mask.shape[1], 3))
 
     colorized[mask[:, :, 1] == 1] = gun_color
@@ -18,7 +23,8 @@ def overlay_mask_on_image(image, mask, alpha=0.4):
 
     highlighted_image = cv2.addWeighted(image, 1 - alpha, mask, alpha, 0)
 
-    overlay_image = np.where(normalized_mask[:, :, None] > 0, highlighted_image, image)
+    overlay_image = np.where(
+        normalized_mask[:, :, None] > 0, highlighted_image, image)
 
     return overlay_image
 
@@ -67,3 +73,25 @@ def f1_score(y_true, y_pred):
     f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
     f1 = tf.reduce_mean(f1)  # Average F1 score across classes
     return f1
+
+
+def confusion_matrix_calc(label_paths, pred_paths, shape):
+    num_classes = NUM_CLASSES
+
+    labels = np.zeros(((len(label_paths), ) + shape))
+    preds = np.zeros(((len(label_paths), ) + shape))
+
+    for i, (label_path, pred_path) in enumerate(zip(label_paths, pred_paths)):
+        label = cv2.imread(label_path)
+        pred = cv2.imread(pred_path)
+
+        labels[i] = label
+        preds[i] = pred
+
+    val_labels = np.argmax(labels, axis=-1)
+    val_preds = np.argmax(preds, axis=-1)
+
+    cm = confusion_matrix(val_labels.flatten(), val_preds.flatten(
+    ), labels=np.arange(num_classes), normalize='true')
+
+    return np.array(cm)
