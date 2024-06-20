@@ -1,8 +1,8 @@
-# Detection and Segmentation of Prohibited Items in Luggage Using Deep Learning Techniques
+# Classification and Segmentation of Prohibited Items in Luggage Using Deep Learning Techniques
 
 ## Introduction
 
-The goal of this project is to use deep learning techniques to develop a system capable of detecting and segmenting prohibited items within luggage images. This approach aims to enhance security screening processes by identifying unsafe images and highlighting objects that pose potential threats.
+The goal of this project is to use deep learning techniques to develop a system capable of classifying and segmenting prohibited items within luggage images. This approach aims to enhance security screening processes by identifying unsafe images and highlighting objects that pose potential threats.
 
 You can access the original dataset, cleaned dataset and trained models on [Google Drive](https://drive.google.com/drive/folders/1aPpMNyn600bHzc_hQHiIxKiJcLlJXTRP?usp=sharing).
 
@@ -18,7 +18,7 @@ You can access the original dataset, cleaned dataset and trained models on [Goog
 This project involves several key steps:
 
 - **Data Cleaning and Preparation:** The dataset required cleaning to remove anomalies and reorganize it for effective model training.
-- **Model Training:** Developed and trained a custom deep learning model for object detection and segmentation.
+- **Model Training:** Developed and trained a custom deep learning model for object classification and segmentation.
 - **Model Evaluation:** Assessed the performance of the trained model using relevant metrics to ensure high accuracy and reliability.
 - **Implementation:** Integrated the trained model into a system that can process luggage images, highlighting prohibited items for security personnel.
 
