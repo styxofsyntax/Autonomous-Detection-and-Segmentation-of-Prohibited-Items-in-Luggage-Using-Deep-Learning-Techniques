@@ -1,3 +1,4 @@
 models/
 __pycache__/
 test_dataset/
+training_code/.ipynb_checkpoints

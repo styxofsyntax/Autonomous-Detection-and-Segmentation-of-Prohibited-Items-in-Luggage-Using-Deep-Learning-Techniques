@@ -13,7 +13,7 @@ from utils import apply_color, overlay_mask_on_image, confusion_matrix_calc, f1_
 IMAGE_PATH = "./data_images/img/"
 MASK_PATH = "./data_images/annotations/"
 PRED_PATH = "./data_images/pred_masks/"
-PLOT_CCOMPARE_PATH = "./data_images/plot_compare"
+PLOT_COMPARE_PATH = "./data_images/plot_compare"
 # IMAGE_PATH = "./test_dataset/img/"
 # MASK_PATH = "./test_dataset/annotations/"
 # PRED_PATH = "./test_dataset/pred_masks/"
@@ -64,6 +64,31 @@ def load_data(image_path, mask_path):
     return (images, masks)
 
 
+def load_images(image_path):
+    """
+    Load Images provided path.
+
+    Args:
+        image_path: path containing images in png format.
+
+    Returns:
+        images = (None, X_SIZE, Y_SIZE, 3)
+    """
+
+    img_paths = sorted(glob(os.path.join(image_path, "*.png")))
+    print(len(img_paths))
+    images = np.zeros([len(img_paths), X_SIZE, Y_SIZE, 3], dtype=np.float32)
+
+    for i, img_path in enumerate(img_paths):
+        img = cv2.imread(img_path)
+        img = cv2.resize(img, (X_SIZE, Y_SIZE),
+                         interpolation=cv2.INTER_NEAREST)
+        img = img / 255.0
+        images[i] = img
+
+    return images
+
+
 def process_images(images):
     pred_unsafe = binary_predict(images)
     pred_unsafe = np.squeeze(pred_unsafe, axis=-1)
@@ -112,7 +137,9 @@ def start():
 
     for i in range(len(images)):
 
-        img = (images[i] * 255).astype(np.uint8)
+        img = cv2.cvtColor(
+            (images[i] * 255).astype(np.uint8), cv2.COLOR_BGR2RGB)
+
         orig_mask = apply_color(masks[i], GUN_COLOR, KNIFE_COLOR)
 
         if pred_unsafe[i] == 1:
@@ -155,10 +182,75 @@ def start():
         plt.title("Predicted Mask ({})".format(pred_status))
         plt.imshow(overlay_pred_mask, interpolation="nearest")
 
-        plt.tight_layout()
-        plot_path = os.path.join(PLOT_CCOMPARE_PATH, f'compare_{i}.png')
-        plt.savefig(plot_path)
-        # plt.show()
+        # plt.tight_layout()
+        # plot_path = os.path.join(PLOT_COMPARE_PATH, f'compare_{i}.png')
+        # plt.savefig(plot_path)
+        plt.show()
+
+    # save predictions
+
+    # img_paths = sorted(glob(os.path.join(IMAGE_PATH, "*.png")))
+
+    # for i, (pred_mask, img_path) in enumerate(zip(pred_masks, img_paths)):
+
+    #     if pred_unsafe[i] == 1:
+    #         pred_mask = cv2.resize(
+    #             pred_mask, (768, 576), interpolation=cv2.INTER_NEAREST)
+
+    #     else:
+    #         pred_mask = np.zeros((576, 768, 3))
+
+    #     pred_mask_path = os.path.join(PRED_PATH, os.path.basename(img_path))
+    #     pred_mask_colorized = cv2.cvtColor(
+    #         apply_color(pred_mask), cv2.COLOR_BGR2RGB)
+
+    #     cv2.imwrite(pred_mask_path, pred_mask_colorized)
+
+
+def start_new():
+    images = load_images(IMAGE_PATH)
+    pred_unsafe, pred_masks = process_images(images)
+
+    # plot image, mask and prediction mask for all predictions
+
+    for i in range(len(images)):
+
+        img = cv2.cvtColor(
+            (images[i] * 255).astype(np.uint8), cv2.COLOR_BGR2RGB)
+
+        if pred_unsafe[i] == 1:
+            pred_mask = apply_color(pred_masks[i], GUN_COLOR, KNIFE_COLOR)
+
+        else:
+            pred_mask = np.zeros_like(img)
+
+        overlay_pred_mask = overlay_mask_on_image(img, pred_mask, 0.75)
+
+        pred_status = "unsafe"
+
+        # predcited mask safe status
+        if pred_unsafe[i] == 0:
+            pred_status = "safe"
+
+        if np.all(np.argmax(pred_masks[i], axis=-1) == 0):
+            pred_status = "safe"
+
+        plt.figure(figsize=(10, 4))
+
+        plt.subplot(1, 2, 1)
+        plt.axis("off")
+        plt.title("Original Image")
+        plt.imshow(img, interpolation="nearest")
+
+        plt.subplot(1, 2, 2)
+        plt.axis("off")
+        plt.title("Predicted Mask ({})".format(pred_status))
+        plt.imshow(overlay_pred_mask, interpolation="nearest")
+
+        # plt.tight_layout()
+        # plot_path = os.path.join(PLOT_COMPARE_PATH, f'compare_{i}.png')
+        # plt.savefig(plot_path)
+        plt.show()
 
     # save predictions
 
@@ -181,6 +273,7 @@ def start():
 
 
 start()
+start_new()
 
 # colorized_label_path = "./test_dataset/colorized"
 # colorized_pred_path = "./test_dataset/pred_masks"
