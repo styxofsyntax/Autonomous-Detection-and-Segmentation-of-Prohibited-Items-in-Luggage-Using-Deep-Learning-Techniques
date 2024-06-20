@@ -2,3 +2,5 @@ models/
 __pycache__/
 test_dataset/
 training_code/.ipynb_checkpoints
+test_pred_masks/
+docs.docx
