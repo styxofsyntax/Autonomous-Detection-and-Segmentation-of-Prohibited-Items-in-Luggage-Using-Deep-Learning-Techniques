@@ -61,22 +61,18 @@ To use this environment with Jupyter Notebook, follow these steps to add it as a
 
 1. **Activate Your Environment:**
 
-`bash
-  conda activate your-environment-name`
+`conda activate your-environment-name`
 
 2. **Install ipykernel:**
 
-`bash
-  conda install ipykernel`
+`conda install ipykernel`
 OR
 
-`bash
-  pip install ipykernel`
+`pip install ipykernel`
 
 3. **Add Environment as a Kernel:**
 
-`bash
-  python -m ipykernel install --user --name=your-environment-name`
+`python -m ipykernel install --user --name=your-environment-name`
 
 4. **Launch Jupyter Notebook/Lab:**
    When you create or open a notebook, select your-environment-name from the kernel dropdown menu under Kernel > Change kernel.
