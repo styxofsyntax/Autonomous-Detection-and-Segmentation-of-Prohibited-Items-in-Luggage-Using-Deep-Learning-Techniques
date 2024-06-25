@@ -1,4 +1,4 @@
-# Detection and Segmentation of Prohibited Items in Luggage Using Deep Learning Techniques
+# Classification and Segmentation of Prohibited Items in Luggage Using Deep Learning Techniques
 
 ![Static Badge](https://img.shields.io/badge/python-3.10.14-blue)
 ![Static Badge](https://img.shields.io/badge/tensorflow-2.10.1-orange)
@@ -7,7 +7,7 @@
 
 ## Introduction
 
-The goal of this project is to use deep learning techniques to develop a system capable of detecting and segmenting prohibited items within luggage images. This approach aims to enhance security screening processes by identifying unsafe images and highlighting objects that pose potential threats.
+The goal of this project is to use deep learning techniques to develop a system capable of classifying and segmenting prohibited items within luggage images. This approach aims to enhance security screening processes by identifying unsafe images and highlighting objects that pose potential threats.
 
 You can access the original dataset, cleaned dataset and trained models on [Google Drive](https://drive.google.com/drive/folders/1aPpMNyn600bHzc_hQHiIxKiJcLlJXTRP?usp=sharing).
 
@@ -23,7 +23,7 @@ You can access the original dataset, cleaned dataset and trained models on [Goog
 This project involves several key steps:
 
 - **Data Cleaning and Preparation:** The dataset required cleaning to remove anomalies and reorganize it for effective model training.
-- **Model Training:** Developed and trained a custom deep learning model for object detection and segmentation.
+- **Model Training:** Developed and trained a custom deep learning model for object classification and segmentation.
 - **Model Evaluation:** Assessed the performance of the trained model using relevant metrics to ensure high accuracy and reliability.
 - **Implementation:** Integrated the trained model into a system that can process luggage images, highlighting prohibited items for security personnel.
 
@@ -66,22 +66,18 @@ To use this environment with Jupyter Notebook, follow these steps to add it as a
 
 1. **Activate Your Environment:**
 
-`bash
-  conda activate your-environment-name`
+`conda activate your-environment-name`
 
 2. **Install ipykernel:**
 
-`bash
-  conda install ipykernel`
+`conda install ipykernel`
 OR
 
-`bash
-  pip install ipykernel`
+`pip install ipykernel`
 
 3. **Add Environment as a Kernel:**
 
-`bash
-  python -m ipykernel install --user --name=your-environment-name`
+`python -m ipykernel install --user --name=your-environment-name`
 
 4. **Launch Jupyter Notebook/Lab:**
    When you create or open a notebook, select your-environment-name from the kernel dropdown menu under Kernel > Change kernel.
