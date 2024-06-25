@@ -1,5 +1,10 @@
 # Detection and Segmentation of Prohibited Items in Luggage Using Deep Learning Techniques
 
+![Static Badge](https://img.shields.io/badge/python-3.10.14-blue)
+![Static Badge](https://img.shields.io/badge/tensorflow-2.10.1-orange)
+![Static Badge](https://img.shields.io/badge/cudatoolkit-11.2-green)
+![Static Badge](https://img.shields.io/badge/cudnn-8.1.0-lightgreen)
+
 ## Introduction
 
 The goal of this project is to use deep learning techniques to develop a system capable of detecting and segmenting prohibited items within luggage images. This approach aims to enhance security screening processes by identifying unsafe images and highlighting objects that pose potential threats.
